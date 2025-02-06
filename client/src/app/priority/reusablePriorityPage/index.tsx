@@ -116,8 +116,8 @@ const ReusablePriorityPage = ({priority}: Props) => {
       <div className="mb-4 flex justify-start">
         <button
           className={`px-4 py-2 ${
-            view === "list" ? "bg-gray-300" : "bg-white"
-          } rounded-l-md`}
+            view === "list" ? "bg-gray-300 dark:bg-slate-400" : "bg-white dark:bg-slate-700"
+          } rounded-l-md dark:text-neutral-500`}
           onClick={() => setView("list")}
         >
           List
@@ -125,8 +125,8 @@ const ReusablePriorityPage = ({priority}: Props) => {
 
         <button
           className={`px-4 py-2 ${
-            view === "table" ? "bg-gray-300" : "bg-white"
-          } rounded-r-md`}
+            view === "table" ? "bg-gray-300 dark:bg-slate-400" : "bg-white dark:bg-slate-700"
+          } rounded-r-md dark:text-neutral-500`}
           onClick={() => setView("table")}
         >
           Table
@@ -135,7 +135,7 @@ const ReusablePriorityPage = ({priority}: Props) => {
       {isLoading ? (
         <div>Loading Tasks...</div>
       ) : view === "list" ? (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-2">
           {filteredTasks?.map((task: Task) => (
             <TaskCard key={task.id} task={task} />
           ))}

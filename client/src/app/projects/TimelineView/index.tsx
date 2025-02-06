@@ -7,17 +7,26 @@ import React, { useMemo, useState } from 'react'
 type Props = {
     id: string;
     setIsModalNewTaskOpen: (isOpen: boolean) => void;
+    searchTerm: string;
 }
 
 type TaskTypeItems = "task" | "milestone" | "project";
 
-const Timeline = ({ id, setIsModalNewTaskOpen }: Props) => {
+const Timeline = ({ id, setIsModalNewTaskOpen, searchTerm }: Props) => {
     const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
     const {
         data: tasks,
         isLoading,
         error,
-    } = useGetTasksQuery({ projectId: Number(id) });
+    } = useGetTasksQuery(
+        {
+          projectId: Number(id),
+          ...(searchTerm.length >= 3 && { taskTitle: searchTerm }),
+        },
+        {
+          skip: searchTerm.length > 0 && searchTerm.length < 3,
+        },
+      );
 
     const [displayOptions, setDisplayOptions] = useState<DisplayOption>({
         viewMode: ViewMode.Month,

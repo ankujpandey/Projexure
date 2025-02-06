@@ -8,6 +8,7 @@ import React from 'react'
 type Props = {
     id: string;
     setIsModalNewTaskOpen: (isOpen: boolean) => void;
+    searchTerm: string;
 }
 
 const columns: GridColDef[] = [
@@ -75,13 +76,21 @@ const columns: GridColDef[] = [
     },
 ];
 
-const TableView = ({ id, setIsModalNewTaskOpen }: Props) => {
+const TableView = ({ id, setIsModalNewTaskOpen, searchTerm }: Props) => {
     const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
     const {
         data: tasks,
         isLoading,
         error,
-    } = useGetTasksQuery({ projectId: Number(id) });
+    } = useGetTasksQuery(
+        {
+          projectId: Number(id),
+          ...(searchTerm.length >= 3 && { taskTitle: searchTerm }),
+        },
+        {
+          skip: searchTerm.length > 0 && searchTerm.length < 3,
+        },
+      );
 
     if(isLoading) return <div>Loading...</div>
     if(error) return <div>An error occurred while fetching tasks</div>

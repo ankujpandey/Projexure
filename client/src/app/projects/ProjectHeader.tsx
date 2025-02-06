@@ -5,10 +5,11 @@ import ModalNewProject from './ModalNewProject';
 
 type Props = {
     activeTab: string;
-    setActiveTab: (tabName: string) => void
+    setActiveTab: (tabName: string) => void;
+    handleSearch: (value: string) => void;
 };
 
-const ProjectHeader = ({activeTab, setActiveTab}: Props) => {
+const ProjectHeader = ({activeTab, setActiveTab, handleSearch}: Props) => {
     const [isModalNewProjectOpen, setIsModalNewProjectOpen] = useState(false);
     return (
         <div className="px-4 xl:px-6">
@@ -68,6 +69,7 @@ const ProjectHeader = ({activeTab, setActiveTab}: Props) => {
                     <div className="relative">
                         <input type="text" placeholder='Search Task'
                             className='rounded-md border py-1 pl-10 pr-4 focus:outline-none dark:border-dark-secondary dark:bg-dark-secondary dark:text-white'
+                            onChange={(e) => handleSearch(e.target.value)}
                         />
                         <Grid3X3 className='absolute left-3 h-4 w-4 text-gray-400 dark:text-neutral-500' style={{top: "0.45rem"}} />
                     </div>

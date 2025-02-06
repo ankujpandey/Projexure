@@ -7,11 +7,20 @@ export const getTasks = async (
     req: Request,
     res: Response
 ): Promise<void> => {
-    const { projectId } = req.query;
+    const { projectId, taskName } = req.query;
+
+    if (!projectId || typeof projectId !== "string") {
+        res.status(400).json({ message: "Invalid or missing projectId" });
+        return;
+    }
+
+    const taskNameString = typeof taskName === "string" ? taskName : undefined;
+
     try {
         const tasks = await prisma.task.findMany({
             where: {
                 projectId: Number(projectId),
+                ...(taskNameString && { title: { contains: taskNameString, mode: "insensitive" } }),
             },
             include: {
                 author: true,
@@ -20,6 +29,9 @@ export const getTasks = async (
                 attachments: true,
             },
         });
+
+        console.log("tasks Comments------------",tasks[0]?.comments)
+        console.log("tasks------------",tasks[0])
         res.json(tasks);
     } catch (error: any) {
         console.log("error in tasks----------", error)

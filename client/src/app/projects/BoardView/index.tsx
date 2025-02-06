@@ -11,16 +11,28 @@ import { Span } from 'next/dist/trace';
 type BoardProps = {
     id: string;
     setIsModalNewTaskOpen: (isOpen: boolean) => void;
+    searchTerm: string;
 }
 
 const taskStatus = ["To Do", "Work In Progress", "Under Review", "Completed"];
 
-const BoardView = ({ id, setIsModalNewTaskOpen }: BoardProps) => {
+const BoardView = ({ id, setIsModalNewTaskOpen, searchTerm }: BoardProps) => {
     const {
-        data: tasks,
-        isLoading,
-        error,
-    } = useGetTasksQuery({ projectId: Number(id) });
+      data: tasks,
+      isLoading,
+      error,
+    } = useGetTasksQuery(
+      {
+        projectId: Number(id),
+        ...(searchTerm.length >= 3 && { taskTitle: searchTerm }),
+      },
+      {
+        skip: searchTerm.length > 0 && searchTerm.length < 3,
+      },
+    );
+
+    console.log("searchTerm---------------",searchTerm)
+
     const [updateTaskStatus] = useUpdateTaskStatusMutation();
 
     const moveTask = (taskId: number, toStatus: string) => {
