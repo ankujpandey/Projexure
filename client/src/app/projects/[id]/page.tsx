@@ -6,7 +6,7 @@ import ListView from '../ListView';
 import Timeline from '../TimelineView';
 import TableView from '../TableView';
 import ModalNewTask from '@/components/ModalNewTask';
-import { useSearchQuery } from '@/state/api';
+import { FilterOptions } from '@/state/api';
 import { debounce } from 'lodash';
 
 
@@ -18,8 +18,15 @@ const Project = ({params}: Props) => {
     const {id} = params;
     const [activeTab, setActiveTab] = useState("Board");
     const [isModalNewTaskOpen, setIsModalNewTaskOpen] = useState(false);
-
     const [searchTerm, setSearchTerm] = useState("");
+
+    const [appliedFilters, setAppliedFilters] = useState<FilterOptions>({
+        statuses: [],
+        priorities: [],
+        tags: null,
+        startDate: null,
+        endDate: null,
+    });
 
     const handleSearch = debounce(
         (value: string) => {
@@ -27,6 +34,13 @@ const Project = ({params}: Props) => {
         },
         500,
     );
+
+    const handleApplyFilters = (filters: FilterOptions) => {
+        setAppliedFilters(filters);
+        // Optionally, trigger any data fetch or update logic here.
+    };
+
+    console.log("appliedFilters--------------------", appliedFilters)
 
     useEffect(()=>{
         return handleSearch.cancel;
@@ -40,9 +54,10 @@ const Project = ({params}: Props) => {
                 id={id}
             />
 
-            <ProjectHeader activeTab={activeTab} setActiveTab={setActiveTab} handleSearch={handleSearch} />
+            <ProjectHeader activeTab={activeTab} setActiveTab={setActiveTab} handleSearch={handleSearch} onApplyFilters={handleApplyFilters} appliedFilters={appliedFilters} />
+            
             {activeTab === "Board" && (
-                <BoardView id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} searchTerm={searchTerm} />
+                <BoardView id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} searchTerm={searchTerm} appliedFilters={appliedFilters} />
             )}
 
             {activeTab === "List" && (

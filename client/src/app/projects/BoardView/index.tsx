@@ -2,7 +2,7 @@ import { Priority, useGetTasksQuery, useUpdateTaskStatusMutation } from '@/state
 import React from 'react'
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import {Task as TaskType} from "@/state/api"
+import {Task as TaskType, FilterOptions} from "@/state/api"
 import { EllipsisVertical, MessageSquareMore, Plus } from 'lucide-react';
 import {format} from "date-fns";
 import Image from 'next/image';
@@ -12,11 +12,12 @@ type BoardProps = {
     id: string;
     setIsModalNewTaskOpen: (isOpen: boolean) => void;
     searchTerm: string;
+    appliedFilters: FilterOptions;
 }
 
 const taskStatus = ["To Do", "Work In Progress", "Under Review", "Completed"];
 
-const BoardView = ({ id, setIsModalNewTaskOpen, searchTerm }: BoardProps) => {
+const BoardView = ({ id, setIsModalNewTaskOpen, searchTerm, appliedFilters }: BoardProps) => {
     const {
       data: tasks,
       isLoading,
@@ -25,6 +26,11 @@ const BoardView = ({ id, setIsModalNewTaskOpen, searchTerm }: BoardProps) => {
       {
         projectId: Number(id),
         ...(searchTerm.length >= 3 && { taskTitle: searchTerm }),
+        statuses: appliedFilters.statuses ?? [], 
+        priorities: appliedFilters.priorities ?? [],
+        // ...(appliedFilters.tags && { tags: appliedFilters.tags }),
+        ...(appliedFilters.startDate && { startDate: appliedFilters.startDate }),
+        ...(appliedFilters.endDate && { endDate: appliedFilters.endDate }),
       },
       {
         skip: searchTerm.length > 0 && searchTerm.length < 3,

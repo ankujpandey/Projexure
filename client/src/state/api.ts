@@ -75,6 +75,14 @@ export interface Team {
     projectManagerUserId?: number;
 }
 
+export interface FilterOptions {
+    statuses: string[];
+    priorities: string[];
+    tags: string | null;
+    startDate: string | null;
+    endDate: string | null;
+}
+
 export const api = createApi({
     baseQuery: fetchBaseQuery({baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL}),
     reducerPath: "api",
@@ -92,12 +100,15 @@ export const api = createApi({
             }),
             invalidatesTags: ["Projects"]
         }),
-        getTasks: build.query<Task[], { projectId: number; taskTitle?: string  }>({
-            query: ({ projectId, taskTitle }) => {
+        getTasks: build.query<Task[], { projectId: number; taskTitle?: string, statuses?: string[], priorities?: string[], startDate?: string , endDate?: string  }>({
+            query: ({ projectId, taskTitle, statuses, priorities, startDate, endDate }) => {
                 let url = `tasks?projectId=${projectId}`;
-                if (taskTitle) {
-                    url += `&taskName=${encodeURIComponent(taskTitle)}`;
-                }
+            
+                if (taskTitle) url += `&taskName=${encodeURIComponent(taskTitle)}`;
+                if (statuses && statuses.length > 0) url += `&statuses=${statuses.join(",")}`;
+                if (priorities && priorities.length > 0) url += `&priorities=${priorities.join(",")}`;
+                if (startDate) url += `&startDate=${startDate}`;
+                if (endDate) url += `&endDate=${endDate}`;
                 return url;
             },
             providesTags: (result) =>

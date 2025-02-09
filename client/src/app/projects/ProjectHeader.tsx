@@ -2,15 +2,28 @@ import Header from '@/components/Header';
 import { Clock, Filter, Grid3X3, List, PlusSquare, Share2, SmilePlus, Table } from 'lucide-react';
 import React, { useState } from 'react'
 import ModalNewProject from './ModalNewProject';
+import FilterDropdown from '@/components/FilterOptionsTask';
+import { FilterOptions } from '@/state/api';
 
 type Props = {
     activeTab: string;
     setActiveTab: (tabName: string) => void;
     handleSearch: (value: string) => void;
+    onApplyFilters?: (filters: FilterOptions) => void;
+    appliedFilters: FilterOptions;
 };
 
-const ProjectHeader = ({activeTab, setActiveTab, handleSearch}: Props) => {
+const ProjectHeader = ({activeTab, setActiveTab, handleSearch, onApplyFilters = () => {}, appliedFilters}: Props) => {
     const [isModalNewProjectOpen, setIsModalNewProjectOpen] = useState(false);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+    const isFilterActive =
+    appliedFilters.statuses.length > 0 ||
+    appliedFilters.priorities.length > 0 ||
+    !!appliedFilters.tags ||
+    !!appliedFilters.startDate ||
+    !!appliedFilters.endDate;
+
     return (
         <div className="px-4 xl:px-6">
             <ModalNewProject 
@@ -32,7 +45,7 @@ const ProjectHeader = ({activeTab, setActiveTab, handleSearch}: Props) => {
             </div>
 
             {/* TABS */}
-            <div className="flex flex-wrap-reverse gap-2 border-y border-gray-200 pb-[8px] pt-2 dark:border-stroke-dark md:items-center">
+            <div className="relative flex flex-wrap-reverse gap-2 border-y border-gray-200 pb-[8px] pt-2 dark:border-stroke-dark md:items-center">
                 <div className="flex flex-1 gap-2 md:gap-4">
                     <TabButton
                         name="Board"
@@ -60,9 +73,22 @@ const ProjectHeader = ({activeTab, setActiveTab, handleSearch}: Props) => {
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <button className='text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300'>
-                        <Filter className='h-5 w-5'/>
+                    <button 
+                        className={`text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300 ${
+                            isFilterActive ? "ring-2 ring-blue-500 shadow-lg" : ""
+                        }`}
+                        onClick={() => setIsFilterOpen((prev) => !prev)}
+                    >
+                        <Filter className={`h-5 w-5 ${isFilterOpen ? "text-blue-500" : ""}`}/>
                     </button>
+                    {/* FilterDropdown Component */}
+                    <FilterDropdown 
+                        isOpen={isFilterOpen}
+                        onClose={() => setIsFilterOpen(false)}
+                        onApplyFilters={onApplyFilters}
+                        initialFilters={appliedFilters}
+                    />       
+                    
                     <button className='text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300'>
                         <Share2 className='h-5 w-5'/>
                     </button>

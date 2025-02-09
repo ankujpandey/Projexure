@@ -1,13 +1,26 @@
 import {Request, Response} from "express";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
+import { ParsedQs } from "qs";
 
 const prisma = new PrismaClient();
+
+const getString = (
+    value: string | ParsedQs | (string | ParsedQs)[] | undefined
+  ): string | undefined => {
+    if (!value) return undefined;
+    if (typeof value === "string") return value;
+    if (Array.isArray(value)) {
+      const first = value[0];
+      return typeof first === "string" ? first : undefined;
+    }
+    return undefined;
+};
 
 export const getTasks = async (
     req: Request,
     res: Response
 ): Promise<void> => {
-    const { projectId, taskName } = req.query;
+    const { projectId, taskName, statuses, priorities, startDate, endDate, tags } = req.query;
 
     if (!projectId || typeof projectId !== "string") {
         res.status(400).json({ message: "Invalid or missing projectId" });
@@ -16,12 +29,28 @@ export const getTasks = async (
 
     const taskNameString = typeof taskName === "string" ? taskName : undefined;
 
+    const statusFilter = typeof statuses === "string" ? statuses.split(",") : undefined;
+    const priorityFilter = typeof priorities === "string" ? priorities.split(",") : undefined;
+    const tagFilter = typeof tags === "string" ? tags.split(",") : undefined;
+
+    const startDateStr = getString(startDate);
+    const endDateStr = getString(endDate);
+
     try {
+        const whereClause: Prisma.TaskWhereInput = {
+            projectId: Number(projectId),
+            ...(taskNameString && {
+                title: { contains: taskNameString, mode: "insensitive" },
+            }),
+            ...(statusFilter && { status: { in: statusFilter } }),
+            ...(priorityFilter && { priority: { in: priorityFilter } }),
+            ...(startDateStr ? { dueDate: { gte: new Date(startDateStr) } } : {}),
+            ...(endDateStr ? { dueDate: { lte: new Date(endDateStr) } } : {}),
+            // ...(tagFilter && { tags: { hasSome: tagFilter } }),
+        };
+
         const tasks = await prisma.task.findMany({
-            where: {
-                projectId: Number(projectId),
-                ...(taskNameString && { title: { contains: taskNameString, mode: "insensitive" } }),
-            },
+            where: whereClause,
             include: {
                 author: true,
                 assignee: true,
