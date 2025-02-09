@@ -1,5 +1,5 @@
 import { useAppSelector } from '@/app/redux';
-import { useGetTasksQuery } from '@/state/api';
+import { FilterOptions, useGetTasksQuery } from '@/state/api';
 import { DisplayOption, Gantt, ViewMode } from 'gantt-task-react';
 import "gantt-task-react/dist/index.css"
 import React, { useMemo, useState } from 'react'
@@ -8,11 +8,12 @@ type Props = {
     id: string;
     setIsModalNewTaskOpen: (isOpen: boolean) => void;
     searchTerm: string;
+    appliedFilters: FilterOptions;
 }
 
 type TaskTypeItems = "task" | "milestone" | "project";
 
-const Timeline = ({ id, setIsModalNewTaskOpen, searchTerm }: Props) => {
+const Timeline = ({ id, setIsModalNewTaskOpen, searchTerm, appliedFilters }: Props) => {
     const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
     const {
         data: tasks,
@@ -22,6 +23,11 @@ const Timeline = ({ id, setIsModalNewTaskOpen, searchTerm }: Props) => {
         {
           projectId: Number(id),
           ...(searchTerm.length >= 3 && { taskTitle: searchTerm }),
+          statuses: appliedFilters.statuses ?? [], 
+          priorities: appliedFilters.priorities ?? [],
+          // ...(appliedFilters.tags && { tags: appliedFilters.tags }),
+          ...(appliedFilters.startDate && { startDate: appliedFilters.startDate }),
+          ...(appliedFilters.endDate && { endDate: appliedFilters.endDate }),
         },
         {
           skip: searchTerm.length > 0 && searchTerm.length < 3,

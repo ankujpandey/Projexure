@@ -1,7 +1,7 @@
 import { useAppSelector } from '@/app/redux';
 import Header from '@/components/Header';
 import { dataGridClassNames, dataGridSxStyles } from '@/lib/utils';
-import { useGetTasksQuery } from '@/state/api';
+import { FilterOptions, useGetTasksQuery } from '@/state/api';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import React from 'react'
 
@@ -9,6 +9,7 @@ type Props = {
     id: string;
     setIsModalNewTaskOpen: (isOpen: boolean) => void;
     searchTerm: string;
+    appliedFilters: FilterOptions;
 }
 
 const columns: GridColDef[] = [
@@ -76,7 +77,7 @@ const columns: GridColDef[] = [
     },
 ];
 
-const TableView = ({ id, setIsModalNewTaskOpen, searchTerm }: Props) => {
+const TableView = ({ id, setIsModalNewTaskOpen, searchTerm, appliedFilters }: Props) => {
     const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
     const {
         data: tasks,
@@ -86,6 +87,11 @@ const TableView = ({ id, setIsModalNewTaskOpen, searchTerm }: Props) => {
         {
           projectId: Number(id),
           ...(searchTerm.length >= 3 && { taskTitle: searchTerm }),
+          statuses: appliedFilters.statuses ?? [], 
+          priorities: appliedFilters.priorities ?? [],
+          // ...(appliedFilters.tags && { tags: appliedFilters.tags }),
+          ...(appliedFilters.startDate && { startDate: appliedFilters.startDate }),
+          ...(appliedFilters.endDate && { endDate: appliedFilters.endDate }),
         },
         {
           skip: searchTerm.length > 0 && searchTerm.length < 3,

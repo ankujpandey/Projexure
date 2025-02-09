@@ -1,6 +1,6 @@
 import Header from '@/components/Header';
 import TaskCard from '@/components/TackCard';
-import { Task, useGetTasksQuery } from '@/state/api';
+import { FilterOptions, Task, useGetTasksQuery } from '@/state/api';
 import { ClassNames } from '@emotion/react';
 import React from 'react'
 
@@ -8,9 +8,10 @@ type Props = {
   id: string;
   setIsModalNewTaskOpen: (isOpen: boolean) => void;
   searchTerm: string;
+  appliedFilters: FilterOptions;
 }
 
-const ListView = ({ id, setIsModalNewTaskOpen, searchTerm }: Props) => {
+const ListView = ({ id, setIsModalNewTaskOpen, searchTerm, appliedFilters }: Props) => {
   const {
     data: tasks,
     isLoading,
@@ -19,6 +20,11 @@ const ListView = ({ id, setIsModalNewTaskOpen, searchTerm }: Props) => {
   {
     projectId: Number(id),
     ...(searchTerm.length >= 3 && { taskTitle: searchTerm }),
+    statuses: appliedFilters.statuses ?? [], 
+    priorities: appliedFilters.priorities ?? [],
+    // ...(appliedFilters.tags && { tags: appliedFilters.tags }),
+    ...(appliedFilters.startDate && { startDate: appliedFilters.startDate }),
+    ...(appliedFilters.endDate && { endDate: appliedFilters.endDate }),
   },
   {
     skip: searchTerm.length > 0 && searchTerm.length < 3,
