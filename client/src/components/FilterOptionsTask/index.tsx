@@ -159,7 +159,7 @@ const FilterDropdown = ({
           className="w-1/3 rounded-md bg-gray-500 p-2 text-white"
           onClick={clearFilters}
         >
-          Clear Filters
+          Clear {/* Filters */}
         </button>
 
         {/* Apply Filters Button */}
@@ -167,7 +167,7 @@ const FilterDropdown = ({
           onClick={handleApply}
           className="w-1/3 rounded-md bg-blue-500 p-2 text-white"
         >
-          Apply Filters
+          Apply {/* Filters */}
         </button>
       </div>
     </div>

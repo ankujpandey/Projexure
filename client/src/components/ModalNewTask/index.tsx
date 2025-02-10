@@ -38,7 +38,7 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
     });
 
     const handleSubmit = async () => {
-        if(!title || !authorUserId || !(id !== null || projectId )) return;
+        if(!title || !authorUserId || (id !== null || projectId )) return;
 
         const formattedStartDate = startDate ? formatISO(new Date(startDate),{representation: 'complete'}) : "";
         const formattedDueDate = dueDate ? formatISO(new Date(dueDate),{representation: 'complete'}) : "";
@@ -56,6 +56,18 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
             projectId: id !== null ? Number(id) : Number(projectId),
         });
 
+
+        console.log("title---------",title)
+        console.log("description---------",description)
+        console.log("status---------",status)
+        console.log("priority---------",priority)
+        console.log("tags---------",tags)
+        console.log("startDate---------",startDate)
+        console.log("dueDate---------",dueDate)
+        console.log("authorUserId---------",authorUserId)
+        console.log("assignedUserId---------",assignedUserId)
+        console.log("id---------",id)
+
         if(resp.data){
           setTitle("");
           setDescription("");
@@ -72,7 +84,7 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
     }
 
     const isFormValid = () => {
-        return title && authorUserId && !(id !== null || projectId );;
+        return title && authorUserId && (id !== null || projectId );
     }
 
     const selectStyles = "w-full rounded border-gray-300 dark:border-dark-tertiary dark:bg-dark-tertiary dark:text-white dark:focus:outline-none";
