@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Status, Priority } from "../../state/api";
+import { ThemeProvider } from "@emotion/react";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { textFieldSxStyle } from "@/lib/utils";
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
+import { useAppSelector } from "@/app/redux";
+import { createTheme } from "@mui/material";
 
 type FilterOptions = {
     statuses: string[];
@@ -22,7 +28,15 @@ const FilterDropdown = ({
   onApplyFilters,
   initialFilters,
 }: Props) => {
+  const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+
   const [filters, setFilters] = useState<FilterOptions>(initialFilters);
+
+  const theme = createTheme({
+    palette: {
+        mode: isDarkMode ? 'dark' : 'light',
+    },
+});
 
   useEffect(() => {
     setFilters(initialFilters);
@@ -39,79 +53,123 @@ const FilterDropdown = ({
     });
   };
 
-  const handleDateChange = (field: "startDate" | "endDate", value: string) => {
-      const isoValue = value ? new Date(value).toISOString() : "";
-      setFilters((prev) => ({ ...prev, [field]: isoValue }));
-    };
+  const handleDateChange = (field: "startDate" | "endDate", value: Date | null) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: value ? value.toISOString() : null,
+    }));
+  };
 
   const handleApply = () => {
     onApplyFilters(filters);
     onClose();
   };
 
+  const clearFilters = () => {
+    setFilters({
+      statuses: [],
+      priorities: [],
+      tags: "",
+      startDate: null, 
+      endDate: null,
+    });
+  };
+
   if (!isOpen) return null;
+
+  const selectStyles = "w-full rounded border-gray-300 dark:border-dark-tertiary dark:bg-dark-tertiary dark:text-white dark:focus:outline-none";
+  
+  const inputStyles = "w-full rounded border border-gray-300 p-2 shadow-sm dark:border-dark-tertiary dark:bg-dark-tertiary dark:text-white dark:foucus:outline-none"
+
 
   return (
     <div
-      className="absolute right-12 z-10 mt-2 w-80 max-w-full rounded-md border border-gray-200 bg-white p-4 shadow-lg"
+      className="w-120 absolute right-12 z-10 mt-2 max-w-full rounded-md border border-gray-200 bg-white p-4 shadow-lg dark:bg-dark-secondary"
       style={{ top: "100%" }}
     >
-      {/* Status Filter */}
-      <h4 className="mb-2 font-bold">Status</h4>
-      {Object.values(Status).map((status) => (
-        <label key={status} className="mb-1 block cursor-pointer text-sm">
-          <input
-            type="checkbox"
-            value={status}
-            className="mr-2"
-            checked={filters.statuses.includes(status)}
-            onChange={() => handleCheckboxChange("statuses", status)}
-          />
-          {status}
-        </label>
-      ))}
+      {/* Filters Grid Layout */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {/* Status Filter */}
+        <div>
+          <h4 className="mb-2 font-bold">Status</h4>
+          {Object.values(Status).map((status) => (
+            <label key={status} className="mb-1 block cursor-pointer text-sm">
+              <input
+                type="checkbox"
+                value={status}
+                className="mr-2"
+                checked={filters.statuses.includes(status)}
+                onChange={() => handleCheckboxChange("statuses", status)}
+              />
+              {status}
+            </label>
+          ))}
+        </div>
 
-      {/* Priority Filter */}
-      <h4 className="mb-2 mt-4 font-bold">Priority</h4>
-      {Object.values(Priority).map((priority) => (
-        <label key={priority} className="mb-1 block cursor-pointer text-sm">
-          <input
-            type="checkbox"
-            value={priority}
-            className="mr-2"
-            checked={filters.priorities.includes(priority)}
-            onChange={() => handleCheckboxChange("priorities", priority)}
-          />
-          {priority}
-        </label>
-      ))}
+        {/* Priority Filter */}
+        <div>
+          <h4 className="mb-2 font-bold">Priority</h4>
+          {Object.values(Priority).map((priority) => (
+            <label key={priority} className="mb-1 block cursor-pointer text-sm">
+              <input
+                type="checkbox"
+                value={priority}
+                className="mr-2"
+                checked={filters.priorities.includes(priority)}
+                onChange={() => handleCheckboxChange("priorities", priority)}
+              />
+              {priority}
+            </label>
+          ))}
+        </div>
+      </div>
 
-      {/* Date Filters */}
-      <h4 className="mb-2 mt-4 font-bold">Start Date</h4>
-      <input
-        type="date"
-        className="w-full rounded-md border p-2"
-        value={filters.startDate ? filters.startDate.split("T")[0] : ""}
-        onChange={(e) => handleDateChange("startDate", e.target.value)}
-        onFocus={(e) => e.target.showPicker()}
-      />
+      {/* Date Filters (Horizontally in Large Screens) */}
+      <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+        <ThemeProvider theme={theme}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label="Start Date"
+              format="dd-MM-yyyy"
+              className={inputStyles}
+              sx={textFieldSxStyle(isDarkMode)}
+              value={filters.startDate ? new Date(filters.startDate) : null}
+              onChange={(date) => handleDateChange("startDate", date)}
+              slotProps={{
+                textField: { size: "small" },
+              }}
+            />
+            <DatePicker
+              label="End Date"
+              format="dd-MM-yyyy"
+              className={inputStyles}
+              sx={textFieldSxStyle(isDarkMode)}
+              value={filters.endDate ? new Date(filters.endDate) : null}
+              onChange={(date) => handleDateChange("endDate", date)}
+              slotProps={{
+                textField: { size: "small" },
+              }}
+            />
+          </LocalizationProvider>
+        </ThemeProvider>
+      </div>
 
-      <h4 className="mb-2 mt-4 font-bold">End Date</h4>
-      <input
-        type="date"
-        className="w-full rounded-md border p-2"
-        value={filters.endDate ? filters.endDate.split("T")[0] : ""}
-        onChange={(e) => handleDateChange("endDate", e.target.value)}
-        onFocus={(e) => e.target.showPicker()}
-      />
+      <div className="mt-4 flex justify-center space-x-2">
+        <button
+          className="w-1/3 rounded-md bg-gray-500 p-2 text-white"
+          onClick={clearFilters}
+        >
+          Clear Filters
+        </button>
 
-      {/* Apply Filters Button */}
-      <button
-        onClick={handleApply}
-        className="mt-4 w-full rounded-md bg-blue-500 p-2 text-white"
-      >
-        Apply Filters
-      </button>
+        {/* Apply Filters Button */}
+        <button
+          onClick={handleApply}
+          className="w-1/3 rounded-md bg-blue-500 p-2 text-white"
+        >
+          Apply Filters
+        </button>
+      </div>
     </div>
   );
 };
