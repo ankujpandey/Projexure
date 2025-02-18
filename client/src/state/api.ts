@@ -61,6 +61,18 @@ export interface Task {
     attachments?: Attachment[];
 }
 
+export interface Comment {
+    id: number;
+    text: string;
+    taskId: number;
+    userId: number;
+    cognitoId: string;
+    username: string;
+    profilePictureUrl: string;
+    teamId: number;
+    created: string;
+}
+
 export interface SearchResults {
     tasks?: Task[];
     projects?: Project[];
@@ -141,6 +153,16 @@ export const api = createApi({
                 { type: "Tasks", id: taskId },
             ],
         }),
+        addComment: build.mutation<Comment, { taskId: number, userId: number, text: string }>({
+            query: ({ taskId, userId, text }) => ({
+                url: `tasks/${taskId}/${userId}/comments`,
+                method: "POST",
+                body: { text }
+            }),
+            invalidatesTags: (result, error, { taskId }) => [
+                { type: "Tasks", id: taskId },
+            ],
+        }),
         getUsers: build.query<User[], void>({
             query: () => "users",
             providesTags: ["Users"],
@@ -161,6 +183,7 @@ export const {
     useGetTasksQuery,
     useCreateTaskMutation,
     useUpdateTaskStatusMutation,
+    useAddCommentMutation,
     useSearchQuery,
     useGetUsersQuery,
     useGetTeamsQuery,

@@ -54,14 +54,26 @@ export const getTasks = async (
             include: {
                 author: true,
                 assignee: true,
-                comments: true,
+                comments: {
+                    include: {
+                        user: true,
+                    },
+                },
                 attachments: true,
             },
         });
 
-        console.log("tasks Comments------------",tasks[0]?.comments)
-        console.log("tasks------------",tasks[0])
-        res.json(tasks);
+        const flattenedTasks = tasks.map(task => ({
+            ...task,
+            comments: task.comments.map(({ user, userId, ...commentData }) => ({
+                ...commentData,
+                ...user,
+            })),
+        }));
+
+        console.log("tasks Comments------------",flattenedTasks[0]?.comments)
+        console.log("tasks------------",flattenedTasks[0])
+        res.json(flattenedTasks);
     } catch (error: any) {
         console.log("error in tasks----------", error)
         res.status(500).json({message: `Error retriving tasks: ${error.message}`})
@@ -156,5 +168,44 @@ export const getUserTasks = async (
     } catch (error: any) {
         console.log("error in user tasks----------", error)
         res.status(500).json({message: `Error retriving user's tasks: ${error.message}`})
+    }
+}
+
+export const addTaskComment = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    const { taskId, userId } = req.params;
+    const { text } = req.body;
+
+    try {
+        const addComment = await prisma.comment.create({
+            data:{
+                taskId: Number(taskId),
+                text,
+                userId: Number(userId),
+            },
+            include: {
+                user: true,
+            },
+        });
+
+        const formattedComment = {
+            id: addComment.id,
+            text: addComment.text,
+            taskId: addComment.taskId,
+            created: addComment.created,
+            userId: addComment.userId,
+            cognitoId: addComment.user.cognitoId,
+            username: addComment.user.username,
+            profilePictureUrl: addComment.user.profilePictureUrl,
+            teamId: addComment.user.teamId,
+        };
+
+        console.log("comment----------", formattedComment)
+        res.status(200).json(formattedComment);
+    } catch (error: any) {
+        console.log("Error in adding comment----------", error)
+        res.status(500).json({message: `Error updating task: ${error.message}`})
     }
 }

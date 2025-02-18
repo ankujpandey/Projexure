@@ -102,6 +102,7 @@ model Comment {
   text   String
   taskId Int
   userId Int
+  // created DateTime @default(now())
 
   task Task @relation(fields: [taskId], references: [id])
   user User @relation(fields: [userId], references: [userId])
