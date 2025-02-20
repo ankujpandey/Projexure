@@ -1,9 +1,9 @@
 import { Comment, useDeleteTaskMutation, useGetTasksQuery, useUpdateTaskStatusMutation } from '@/state/api';
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import {Task as TaskType, FilterOptions} from "@/state/api"
-import { EditIcon, EllipsisVertical, MessageSquareMore, Plus, Trash } from 'lucide-react';
+import { CalendarArrowDown, CalendarArrowUp, EditIcon, EllipsisVertical, MessageSquareMore, Plus, SortAsc, SortDesc, Trash } from 'lucide-react';
 import {format} from "date-fns";
 import Image from 'next/image';
 import ModalNewTask from '@/components/ModalNewTask';
@@ -109,7 +109,7 @@ const TaskColumn = ({
     setIsModalNewTaskOpen,
     setSelectedTask,
     setIsModalNewCommentOpen
-}: TaskColumnProps) => {
+}: TaskColumnProps) => {  
     const [{isOver}, drop] = useDrop(()=>({
         accept: "task",
         drop: (item: {id: number}) => moveTask(item.id, status),
@@ -118,7 +118,10 @@ const TaskColumn = ({
         })
     }));
 
-    const tasksCount = tasks.filter((task)=> task.status === status).length;
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [sortBy, setSortBy] = useState<'priority' | 'startDate' | 'dueDate' | null>(null);
+    const filterdTasks = tasks.filter((task)=> task.status === status);
+    const tasksCount = filterdTasks.length;
 
     const statusColor: any = {
         "To Do": "#2563EB",
@@ -127,45 +130,125 @@ const TaskColumn = ({
         Completed: "#000000",
     };
 
+    const priorityOrder: Record<string, number> = {
+      Urgent: 1,
+      High: 2,
+      Medium: 3,
+      Low: 4,
+      Backlog: 5,
+    };
+
+    const comparePriority = (a: TaskType, b: TaskType) => {
+      const aPriority = a.priority ? priorityOrder[a.priority] : 100;
+      const bPriority = b.priority ? priorityOrder[b.priority] : 100;
+      return aPriority - bPriority;
+    };
+    
+    const compareDate = (dateKey: 'startDate' | 'dueDate') => (a: TaskType, b: TaskType) => {
+      const aDate = a[dateKey] ? new Date(a[dateKey]!).getTime() : Number.MAX_SAFE_INTEGER;
+      const bDate = b[dateKey] ? new Date(b[dateKey]!).getTime() : Number.MAX_SAFE_INTEGER;
+      return aDate - bDate;
+    };
+
+    const comparators: Record<string, (a: TaskType, b: TaskType) => number> = {
+      priority: comparePriority,
+      startDate: compareDate('startDate'),
+      dueDate: compareDate('dueDate'),
+    };
+
+    const sortedTasks = useMemo(() => {
+      if (!sortBy) return filterdTasks;
+      return [...filterdTasks].sort(comparators[sortBy] || (() => 0));
+    }, [sortBy, filterdTasks]);
+
     return (
-        <div ref={(instance)=>{
-            drop(instance);
+      <div
+        ref={(instance) => {
+          drop(instance);
         }}
         className={`sl:py-4 rounded-lg py-2 xl:px-2 ${isOver ? "bg-blue-100 dark:bg-neutral-950" : ""}`}
-        >
-            <div className="mb-3 flex w-full">
-                <div className={`w-2 !bg-[${statusColor[status]}] rounded-s-lg`} 
-                    style={{backgroundColor: statusColor[status]}}
-                />
-                <div className="flex w-full items-center justify-between rounded-e-lg bg-white px-5 py-4 dark:bg-dark-secondary">
-                    <h3 className="flex items-center text-lg font-semibold dark:text-white">
-                        {status}{" "}
-                    
-                        <span className='ml-2 inline-block rounded-full bg-gray-200 p-1 text-center text-sm leading-none dark:bg-dark-tertiary'
-                            style={{width: "1.5rem", height: "1.5rem"}}
-                        >
-                            {tasksCount}
-                        </span>
-                    </h3> 
-                    <div className="flex items-center gap-1">
-                        <button className="flex h-6 w-5 items-center justify-center dark:text-neutral-500">
-                            <EllipsisVertical size={26} />
-                        </button>
-                        <button className="flex h-6 w-6 items-center justify-center rounded bg-gray-200 dark:bg-dark-tertiary dark:text-white"
-                            onClick={()=> setIsModalNewTaskOpen(true)}
-                        >
-                            <Plus size={16} />
-                        </button>
+      >
+        <div className="mb-3 flex w-full">
+          <div
+            className={`w-2 !bg-[${statusColor[status]}] rounded-s-lg`}
+            style={{ backgroundColor: statusColor[status] }}
+          />
+          <div className="flex w-full items-center justify-between rounded-e-lg bg-white px-5 py-4 dark:bg-dark-secondary">
+            <h3 className="flex items-center text-lg font-semibold dark:text-white">
+              {status}{" "}
+              <span
+                className="ml-2 inline-block rounded-full bg-gray-200 p-1 text-center text-sm leading-none dark:bg-dark-tertiary"
+                style={{ width: "1.5rem", height: "1.5rem" }}
+              >
+                {tasksCount}
+              </span>
+            </h3>
+            <div className="flex items-center gap-1">
+              <div className="relative">
+                <button
+                  className="flex h-6 w-5 items-center justify-center dark:text-neutral-500"
+                  onClick={() => {
+                    setIsMenuOpen(!isMenuOpen);
+                  }}
+                >
+                  <EllipsisVertical size={26} />
+                </button>
+                {isMenuOpen && (
+                  <div
+                    className="z-10 right-0 absolute mt-1 w-48 rounded-md border bg-white shadow-lg dark:bg-dark-secondary"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="py-1">
+                      <button
+                        onClick={()=>{
+                          setSortBy('priority');
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800"
+                      >
+                        <SortDesc size={15} /> Sort by Priority
+                      </button>
+                      <button
+                        onClick={()=>{
+                          setSortBy('startDate');
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800"
+                      >
+                        <CalendarArrowDown size={15} /> Sort by Start Date
+                      </button>
+                      <button
+                        onClick={()=>{
+                          setSortBy('dueDate');
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800"
+                      >
+                        <CalendarArrowUp size={15} /> Sort by Due Date
+                      </button>
                     </div>
-                </div>
+                  </div>
+                )}
+              </div>
+              <button
+                className="flex h-6 w-6 items-center justify-center rounded bg-gray-200 dark:bg-dark-tertiary dark:text-white"
+                onClick={() => setIsModalNewTaskOpen(true)}
+              >
+                <Plus size={16} />
+              </button>
             </div>
-            {tasks
-                .filter((task)=> task.status === status)
-                .map((task)=>(
-                    <Task key={task.id} task={task} setSelectedTask={setSelectedTask} setIsModalNewCommentOpen={setIsModalNewCommentOpen} />
-                ))
-            }
+          </div>
         </div>
+        {sortedTasks
+          .map((task) => (
+            <Task
+              key={task.id}
+              task={task}
+              setSelectedTask={setSelectedTask}
+              setIsModalNewCommentOpen={setIsModalNewCommentOpen}
+            />
+          ))}
+      </div>
     );
 }
 
@@ -289,7 +372,7 @@ const Task = ({task, setSelectedTask, setIsModalNewCommentOpen}: TaskProps) => {
               </button>
               {isMenuOpen && (
                 <div
-                  className="z-8 absolute right-0 mt-2 w-48 rounded-md border bg-white shadow-lg dark:bg-dark-secondary"
+                  className="z-8 absolute right-0 mt-1 w-48 rounded-md border bg-white shadow-lg dark:bg-dark-secondary"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="py-1">

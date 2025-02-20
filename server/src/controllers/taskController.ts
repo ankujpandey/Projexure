@@ -202,15 +202,41 @@ export const deleteTask = async (
     res: Response
 ): Promise<void> => {
     const { taskId } = req.params;
-    console.log("task id---------", taskId)
 
+    const taskIdNumber = Number(taskId);
+    
     try {
-        const updatedTask = await prisma.task.delete({
-            where: {
-                id: Number(taskId),
-            }
+        const deletedTask = await prisma.$transaction(async (tx) => {
+        // Delete attachments related to the task
+        await tx.attachment.deleteMany({
+            where: { taskId: taskIdNumber },
         });
-        res.status(200).json(updatedTask);
+        
+        // Delete task assignment references related to the task
+        await tx.taskAssignment.deleteMany({
+            where: { taskId: taskIdNumber },
+        });
+        
+        // Delete comments on the task
+        await tx.comment.deleteMany({
+            where: { taskId: taskIdNumber },
+        });
+        
+        // Finally, delete the task itself
+        return tx.task.delete({
+            where: { id: taskIdNumber },
+        });
+    });
+    
+    res.status(200).json(deletedTask);
+
+    // try {
+    //     const updatedTask = await prisma.task.delete({
+    //         where: {
+    //             id: Number(taskId),
+    //         }
+    //     });
+    //     res.status(200).json(updatedTask);
     } catch (error: any) {
         console.log("error in createProject----------", error)
         res.status(500).json({message: `Error updating task: ${error.message}`})

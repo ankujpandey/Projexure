@@ -41,7 +41,8 @@ const Timeline = ({ id, setIsModalNewTaskOpen, searchTerm, appliedFilters }: Pro
 
     const ganttTasks = useMemo(()=>{
         return (
-            tasks?.map((task) => ({
+            tasks?.filter(task => task.startDate && task.dueDate)
+            .map((task) => ({
                 start: new Date(task.startDate as string),
                 end: new Date(task.dueDate as string),
                 name: task.title,
