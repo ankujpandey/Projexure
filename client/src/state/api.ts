@@ -153,6 +153,21 @@ export const api = createApi({
                 { type: "Tasks", id: taskId },
             ],
         }),
+        updateTask: build.mutation<Task, Partial<Task> & Pick<Task, 'id'>>({
+            query: ({ id, ...patch }) => ({
+                url: `tasks/update/${id}`,
+                method: 'PATCH',
+                body: patch,
+            }),
+            invalidatesTags: (result, error, { id }) => [{ type: 'Tasks', id }],
+        }),
+        deleteTask: build.mutation<void, {taskId: number}>({
+            query: ({taskId}) => ({
+                url: `tasks/${taskId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Tasks"],
+        }),
         addComment: build.mutation<Comment, { taskId: number, userId: number, text: string }>({
             query: ({ taskId, userId, text }) => ({
                 url: `tasks/${taskId}/${userId}/comments`,
@@ -183,6 +198,8 @@ export const {
     useGetTasksQuery,
     useCreateTaskMutation,
     useUpdateTaskStatusMutation,
+    useUpdateTaskMutation,
+    useDeleteTaskMutation,
     useAddCommentMutation,
     useSearchQuery,
     useGetUsersQuery,

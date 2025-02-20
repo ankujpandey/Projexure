@@ -6,15 +6,15 @@ import { X } from 'lucide-react';
 type Props = {
     children: React.ReactNode;
     isOpen: boolean;
-    onClose: () => void;
     name: string;
+    onClose?: () => void;
 }
 
 const Modal = ({
     children,
     isOpen,
-    onClose,
-    name
+    name,
+    onClose
 }: Props) => {
     if(!isOpen) return null; 
     return (
@@ -24,12 +24,14 @@ const Modal = ({
                     <Header 
                         name={name}
                         buttonComponent={
-                            <button 
-                                className='flex h-7 w-7 items-center justify-center rounded-full text-gray-900 dark:text-white hover:bg-gray-400'
-                                onClick={onClose}    
-                            >
-                                <X size={18} />
-                            </button>
+                            onClose && (
+                                <button 
+                                    className='flex h-7 w-7 items-center justify-center rounded-full text-gray-900 dark:text-white hover:bg-gray-400'
+                                    onClick={onClose}    
+                                >
+                                    <X size={18} />
+                                </button>
+                            )
                         }
                         isSmalltext
                     />

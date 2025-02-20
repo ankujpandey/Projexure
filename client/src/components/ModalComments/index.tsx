@@ -1,15 +1,11 @@
 import { useAppSelector } from '@/app/redux';
 import Modal from '@/components/Modal';
 import Image from 'next/image';
-import { Comment, Priority, Status, Task, useAddCommentMutation, useCreateTaskMutation } from '@/state/api';
-import { FormControl, InputLabel, MenuItem, Select, TextareaAutosize, TextField } from '@mui/material';
-import { ThemeProvider, createTheme } from '@mui/material/styles'
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
-import { formatDistanceToNow, formatISO, parseISO } from 'date-fns';
-import { format, parse } from 'date-fns';
+import { Comment,Task, useAddCommentMutation } from '@/state/api';
+import {TextareaAutosize} from '@mui/material';
+import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import React, { useEffect, useState } from 'react'
-import { textFieldSxStyle } from '@/lib/utils';
 import { User } from 'lucide-react';
 
 type Props = {

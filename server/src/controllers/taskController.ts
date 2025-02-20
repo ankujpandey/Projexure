@@ -171,6 +171,52 @@ export const getUserTasks = async (
     }
 }
 
+export const updateTask = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    const { taskId } = req.params;
+    const dataToUpdate: any = { ...req.body };
+
+    Object.keys(dataToUpdate).forEach((key) => {
+        if (dataToUpdate[key] === '') {
+            delete dataToUpdate[key];
+        }
+    });
+    try {
+        const updatedTask = await prisma.task.update({
+            where: {
+                id: Number(taskId),
+            },
+            data: dataToUpdate,
+        });
+        res.status(200).json(updatedTask);
+    } catch (error: any) {
+        console.log("error in createProject----------", error)
+        res.status(500).json({message: `Error updating task: ${error.message}`})
+    }
+}
+
+export const deleteTask = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    const { taskId } = req.params;
+    console.log("task id---------", taskId)
+
+    try {
+        const updatedTask = await prisma.task.delete({
+            where: {
+                id: Number(taskId),
+            }
+        });
+        res.status(200).json(updatedTask);
+    } catch (error: any) {
+        console.log("error in createProject----------", error)
+        res.status(500).json({message: `Error updating task: ${error.message}`})
+    }
+}
+
 export const addTaskComment = async (
     req: Request,
     res: Response

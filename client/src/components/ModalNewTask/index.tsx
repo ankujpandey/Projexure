@@ -1,25 +1,27 @@
 import { useAppSelector } from '@/app/redux';
 import Modal from '@/components/Modal';
 import { textFieldSxStyle } from '@/lib/utils';
-import { Priority, Status, useCreateTaskMutation } from '@/state/api';
+import { Priority, Status, Task, useCreateTaskMutation, useUpdateTaskMutation } from '@/state/api';
 import { FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { formatISO, parseISO } from 'date-fns';
-import { format, parse } from 'date-fns';
-import React, { useState } from 'react'
+import { format } from 'date-fns';
+import React, { useEffect, useState } from 'react'
 
 type Props = {
     isOpen: boolean;
     onClose: () => void;
     id?: string | null;
+    task?: Task | null;
 }
 
-const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
+const ModalNewTask = ({ isOpen, onClose, id = null, task }: Props) => {
     const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
-
     const [createTask, {isLoading}] = useCreateTaskMutation();
+    const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation();
+    
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [status, setStatus] = useState<Status>(Status.ToDo);
@@ -37,13 +39,73 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
         },
     });
 
-    const handleSubmit = async () => {
-        if(!title || !authorUserId || (id !== null || projectId )) return;
+    useEffect(() => {
+      if (task) {
+        setTitle(task.title || '');
+        setDescription(task.description || '');
+        setStatus(task.status || Status.ToDo);
+        setPriority(task.priority || Priority.Backlog);
+        setTags(task.tags || "");
+        setStartDate(task.startDate || "");
+        setDueDate(task.dueDate || "");
+        setAuthorUserId(task?.authorUserId?.toString() || "");
+        setAssignedUserId(task?.assignedUserId?.toString() || "");
+        setProjectId(task.projectId !== undefined ? task.projectId.toString() : "");
+      } else {
+        setTitle('');
+        setDescription('');
+        setStatus(Status.ToDo);
+        setPriority(Priority.Backlog);
+        setTags('');
+        setStartDate('');
+        setDueDate('');
+        setAuthorUserId('');
+        setAssignedUserId('');
+        setProjectId(id ? id : '');
+      }
+    }, [task, id]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        // e.preventDefault();
+        console.log("update button clicked", task?.projectId)
+        if(!title || !authorUserId || (id == null && !projectId && (!task || !task.projectId))) return;
 
         const formattedStartDate = startDate ? formatISO(new Date(startDate),{representation: 'complete'}) : "";
         const formattedDueDate = dueDate ? formatISO(new Date(dueDate),{representation: 'complete'}) : "";
 
-        let resp = await createTask({
+        // let resp = await createTask({
+        //     title,
+        //     description,
+        //     status,
+        //     priority,
+        //     tags,
+        //     startDate: formattedStartDate,
+        //     dueDate: formattedDueDate,
+        //     authorUserId: parseInt(authorUserId),
+        //     assignedUserId: parseInt(assignedUserId),
+        //     projectId: id !== null ? Number(id) : Number(projectId),
+        // });
+
+        let resp;
+        if (task?.id) {
+          resp = await updateTask({
+            id: task!.id,
+            title,
+            description,
+            status,
+            priority,
+            tags,
+            startDate: formattedStartDate,
+            dueDate: formattedDueDate,
+            authorUserId: parseInt(authorUserId),
+            assignedUserId: parseInt(assignedUserId),
+            projectId: Number(projectId),
+          });
+
+          // console.log("resp------------", resp)
+        } else {
+          // Create mode: create a new task
+          resp = await createTask({
             title,
             description,
             status,
@@ -54,8 +116,8 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
             authorUserId: parseInt(authorUserId),
             assignedUserId: parseInt(assignedUserId),
             projectId: id !== null ? Number(id) : Number(projectId),
-        });
-
+          });
+        }
 
         console.log("title---------",title)
         console.log("description---------",description)
@@ -68,7 +130,7 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
         console.log("assignedUserId---------",assignedUserId)
         console.log("id---------",id)
 
-        if(resp.data){
+        if(resp && resp.data){
           setTitle("");
           setDescription("");
           setStatus(Status.ToDo);
@@ -84,7 +146,7 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
     }
 
     const isFormValid = () => {
-        return title && authorUserId && (id !== null || projectId );
+        return title && authorUserId && (id !== null || projectId || (task && task.projectId) );
     }
 
     const selectStyles = "w-full rounded border-gray-300 dark:border-dark-tertiary dark:bg-dark-tertiary dark:text-white dark:focus:outline-none";
@@ -97,7 +159,7 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
           className="mt-4 space-y-4 px-4 pb-4"
           onSubmit={(e) => {
             e.preventDefault();
-            handleSubmit();
+            handleSubmit(e);
           }}
         >
           <TextField
@@ -131,12 +193,13 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
                 className={selectStyles}
                 value={status}
                 label="Status"
-                onChange={async (e) =>{
-                  const enumKey = Object.keys(Status).find((key) => Status[key as keyof typeof Status] === e.target.value); //to access keys of enums from value
-                  setStatus(Status[enumKey as keyof typeof Status])
-                }
-
-                }              
+                onChange={async (e) => {
+                  const enumKey = Object.keys(Status).find(
+                    (key) =>
+                      Status[key as keyof typeof Status] === e.target.value,
+                  ); //to access keys of enums from value
+                  setStatus(Status[enumKey as keyof typeof Status]);
+                }}
               >
                 <MenuItem value="">Select Status</MenuItem>
                 <MenuItem value={Status.ToDo}>To Do</MenuItem>
@@ -265,7 +328,14 @@ const ModalNewTask = ({ isOpen, onClose, id = null }: Props) => {
             disabled={!isFormValid() || isLoading}
             type="submit"
           >
-            {isLoading ? "Creating..." : "Create Task"}
+            {task?.id
+              ? isUpdating
+                ? "updating..."
+                : "Update"
+              : isLoading
+                ? "Creating..."
+                : "Create Task"
+            }
           </button>
         </form>
       </Modal>
