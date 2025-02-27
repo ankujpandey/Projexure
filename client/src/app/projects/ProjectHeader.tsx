@@ -1,11 +1,14 @@
 import Header from '@/components/Header';
-import { Clock, Filter, Grid3X3, List, PlusSquare, Share2, SmilePlus, Table } from 'lucide-react';
-import React, { useState } from 'react'
+import { Clock, EditIcon, Filter, Grid3X3, List, PlusSquare, Settings2, Share2, SmilePlus, Table, Trash } from 'lucide-react';
+import React, { useEffect, useState } from 'react'
 import ModalNewProject from './ModalNewProject';
 import FilterDropdown from '@/components/FilterOptionsTask';
-import { FilterOptions } from '@/state/api';
+import { FilterOptions, useDeleteProjectMutation, useGetProjectQuery } from '@/state/api';
+import Project from './[id]/page';
+import ModalConfirm from '@/components/ModalConfirm';
 
 type Props = {
+    id: string;
     activeTab: string;
     setActiveTab: (tabName: string) => void;
     handleSearch: (value: string) => void;
@@ -13,9 +16,38 @@ type Props = {
     appliedFilters: FilterOptions;
 };
 
-const ProjectHeader = ({activeTab, setActiveTab, handleSearch, onApplyFilters = () => {}, appliedFilters}: Props) => {
+const ProjectHeader = ({id, activeTab, setActiveTab, handleSearch, onApplyFilters = () => {}, appliedFilters}: Props) => {
     const [isModalNewProjectOpen, setIsModalNewProjectOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+    const {data: project, isLoading} = useGetProjectQuery({id});
+    const [deleteProject] = useDeleteProjectMutation();
+
+    const handleEdit = () => {
+        setIsDialogOpen(true)
+        setIsMenuOpen(false)
+    }
+    
+    const handleDelete = () => {
+        setIsDeleteDialogOpen(true);
+    }
+
+    const handleConfirmDelete = () => {
+        deleteProject({id})
+        .unwrap()
+        .then(() => {
+            setIsDeleteDialogOpen(false);
+            setIsMenuOpen(false);
+        })
+        .catch((error) => {
+            // Handle error if necessary
+            console.error('Failed to delete project:', error);
+        });
+    };
+
+    console.log("prject------------", project);
 
     const isFilterActive =
     appliedFilters.statuses.length > 0 ||
@@ -24,14 +56,64 @@ const ProjectHeader = ({activeTab, setActiveTab, handleSearch, onApplyFilters = 
     !!appliedFilters.startDate ||
     !!appliedFilters.endDate;
 
+    if(isLoading) return <div></div>;
+
     return (
         <div className="px-4 xl:px-6">
             <ModalNewProject 
                 isOpen={isModalNewProjectOpen}
                 onClose={()=> setIsModalNewProjectOpen(false)}
             />
+            <ModalNewProject 
+                isOpen={isDialogOpen}
+                onClose={()=> setIsDialogOpen(false)}
+                project={project}
+            />
+            <ModalConfirm
+                isOpen={isDeleteDialogOpen}
+                onClose={() => {
+                    setIsDeleteDialogOpen(false);
+                    setIsMenuOpen(false);
+                }}
+                onConfirm={handleConfirmDelete}
+                title="Delete Project"
+                message={`Deleting project will delete all the tasks and thier attahments. Do you still want to delete "${project?.name}"?`}
+                confirmText="Yes, Delete it!"
+                cancelText="No"
+            />
             <div className="pb-6 pt-6 lg:pb-4 lg:pt-8">
-                <Header name="Product Design Development"
+                <Header name={`${project?.name ? project.name : "Product Design Development" }`}
+                    settings={
+                        <div className='relative'>
+                            <button 
+                                onClick={()=>{setIsMenuOpen(!isMenuOpen)}}
+                            >
+                                <Settings2 className='ms-1 h-6 w-6' style={{marginBottom: "-3px"}} />
+                            </button>{}
+
+                            {isMenuOpen && (
+                                <div
+                                    className="z-10 absolute left-0 mt-1 w-48 rounded-md border bg-white shadow-lg dark:bg-dark-secondary"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <div className="py-1">
+                                        <button
+                                            onClick={handleEdit}
+                                            className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800"
+                                        >
+                                            <EditIcon size={15} /> Edit
+                                        </button>
+                                        <button
+                                            onClick={handleDelete}
+                                            className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                        >
+                                            <Trash size={16} /> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    }
                     buttonComponent={
                         <button 
                             className='flex items-center rounded-md bg-blue-primary px-3 py-2 text-white'
@@ -40,6 +122,9 @@ const ProjectHeader = ({activeTab, setActiveTab, handleSearch, onApplyFilters = 
                             <PlusSquare className='mr-2 h-5 w-5' />
                             <span className='font-medium'>New Boards</span>
                         </button>
+                    }
+                    description={
+                        <span className='text-base'>{project?.description}</span>
                     }
                 />
             </div>

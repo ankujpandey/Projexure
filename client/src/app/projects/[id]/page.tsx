@@ -6,7 +6,7 @@ import ListView from '../ListView';
 import Timeline from '../TimelineView';
 import TableView from '../TableView';
 import ModalNewTask from '@/components/ModalNewTask';
-import { FilterOptions } from '@/state/api';
+import { FilterOptions, useGetProjectQuery } from '@/state/api';
 import { debounce } from 'lodash';
 
 
@@ -40,7 +40,7 @@ const Project = ({params}: Props) => {
         // Optionally, trigger any data fetch or update logic here.
     };
 
-    console.log("appliedFilters--------------------", appliedFilters)
+    // console.log("appliedFilters--------------------", appliedFilters)
 
     useEffect(()=>{
         return handleSearch.cancel;
@@ -54,7 +54,7 @@ const Project = ({params}: Props) => {
                 id={id}
             />
 
-            <ProjectHeader activeTab={activeTab} setActiveTab={setActiveTab} handleSearch={handleSearch} onApplyFilters={handleApplyFilters} appliedFilters={appliedFilters} />
+            <ProjectHeader id={id} activeTab={activeTab} setActiveTab={setActiveTab} handleSearch={handleSearch} onApplyFilters={handleApplyFilters} appliedFilters={appliedFilters} />
             
             {activeTab === "Board" && (
                 <BoardView id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} searchTerm={searchTerm} appliedFilters={appliedFilters} />

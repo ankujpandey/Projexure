@@ -1,3 +1,4 @@
+import { getProjects } from './../../../server/src/controllers/projectController';
 import { getTeams } from './../../../server/src/controllers/teamController';
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -102,7 +103,16 @@ export const api = createApi({
     endpoints: (build) => ({
         getProjects: build.query<Project[], void>({
             query: () => "projects",
-            providesTags: ["Projects"],
+            providesTags: (result) =>
+                result
+                    ? [
+                        ...result.map(({ id }) => ({ type: 'Projects' as const, id })),
+                        { type: 'Projects' as const, id: 'LIST' },
+                    ] : [{ type: 'Projects' as const, id: 'LIST' }],
+        }),
+        getProject: build.query<Project, { id: string }>({
+            query: ({ id }) => `projects/${id}`,
+            providesTags: (result, error, { id }) => [{ type: 'Projects' as const, id }],
         }),
         createProject: build.mutation<Project, Partial<Project>>({
             query: (project) => ({
@@ -111,6 +121,24 @@ export const api = createApi({
                 body: project
             }),
             invalidatesTags: ["Projects"]
+        }),
+        updateProject: build.mutation<Project, { id: number; project: Partial<Project> }>({
+            query: ({ id, project }) => ({
+                url: `projects/${id}`,
+                method: 'PATCH',
+                    body: project,
+            }),
+            invalidatesTags: (result, error, { id }) => [
+                { type: 'Projects' as const, id },
+                { type: 'Projects' as const, id: 'LIST' },
+            ],
+        }),
+        deleteProject: build.mutation<void, {id: string}>({
+            query: ({id}) => ({
+                url: `projects/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Projects"],
         }),
         getTasks: build.query<Task[], { projectId: number; taskTitle?: string, statuses?: string[], priorities?: string[], startDate?: string , endDate?: string  }>({
             query: ({ projectId, taskTitle, statuses, priorities, startDate, endDate }) => {
@@ -194,7 +222,10 @@ export const api = createApi({
 
 export const {
     useGetProjectsQuery,
+    useGetProjectQuery,
     useCreateProjectMutation,
+    useUpdateProjectMutation,
+    useDeleteProjectMutation,
     useGetTasksQuery,
     useCreateTaskMutation,
     useUpdateTaskStatusMutation,
