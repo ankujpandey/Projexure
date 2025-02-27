@@ -14,14 +14,17 @@ type Props = {
     handleSearch: (value: string) => void;
     onApplyFilters?: (filters: FilterOptions) => void;
     appliedFilters: FilterOptions;
+    // isDeleted: boolean,
+    // setIsDeleted: (isDeleted: boolean) => void;
 };
 
-const ProjectHeader = ({id, activeTab, setActiveTab, handleSearch, onApplyFilters = () => {}, appliedFilters}: Props) => {
+const ProjectHeader = ({id, /* isDeleted, setIsDeleted, */ activeTab, setActiveTab, handleSearch, onApplyFilters = () => {}, appliedFilters}: Props) => {
     const [isModalNewProjectOpen, setIsModalNewProjectOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+    const [isDeleted, setIsDeleted] = useState(false);
     const {data: project, isLoading} = useGetProjectQuery({id});
     const [deleteProject] = useDeleteProjectMutation();
 
@@ -40,6 +43,8 @@ const ProjectHeader = ({id, activeTab, setActiveTab, handleSearch, onApplyFilter
         .then(() => {
             setIsDeleteDialogOpen(false);
             setIsMenuOpen(false);
+            setIsDeleted(true);
+            setActiveTab("");
         })
         .catch((error) => {
             // Handle error if necessary
@@ -57,6 +62,26 @@ const ProjectHeader = ({id, activeTab, setActiveTab, handleSearch, onApplyFilter
     !!appliedFilters.endDate;
 
     if(isLoading) return <div></div>;
+
+    if (isDeleted) {
+        return (
+            <div className="flex flex-col justify-center items-center min-h-screen text-center">
+                <ModalNewProject 
+                    isOpen={isModalNewProjectOpen}
+                    onClose={()=> setIsModalNewProjectOpen(false)}
+                />
+                <h2 className='text-xl'>Project Deleted</h2>
+                <p className='py-2'>Please select another project or create a new one.</p>
+                <button 
+                    className='flex items-center rounded-md bg-blue-primary px-3 py-2 text-white'
+                    onClick={()=>setIsModalNewProjectOpen(true)}
+                >
+                    <PlusSquare className='mr-2 h-5 w-5' />
+                    <span className='font-medium'>New Boards</span>
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="px-4 xl:px-6">

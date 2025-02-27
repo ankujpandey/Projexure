@@ -19,6 +19,7 @@ const Project = ({params}: Props) => {
     const [activeTab, setActiveTab] = useState("Board");
     const [isModalNewTaskOpen, setIsModalNewTaskOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isDeleted, setIsDeleted] = useState(false);
 
     const [appliedFilters, setAppliedFilters] = useState<FilterOptions>({
         statuses: [],
@@ -54,21 +55,21 @@ const Project = ({params}: Props) => {
                 id={id}
             />
 
-            <ProjectHeader id={id} activeTab={activeTab} setActiveTab={setActiveTab} handleSearch={handleSearch} onApplyFilters={handleApplyFilters} appliedFilters={appliedFilters} />
+            <ProjectHeader id={id} /* setIsDeleted={setIsDeleted} isDeleted={isDeleted} */  activeTab={activeTab} setActiveTab={setActiveTab} handleSearch={handleSearch} onApplyFilters={handleApplyFilters} appliedFilters={appliedFilters} />
             
-            {activeTab === "Board" && (
+            {activeTab === "Board" /* && isDeleted===false */ && (
                 <BoardView id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} searchTerm={searchTerm} appliedFilters={appliedFilters} />
             )}
 
-            {activeTab === "List" && (
+            {activeTab === "List" /* && isDeleted===false */ && (
                 <ListView id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} searchTerm={searchTerm} appliedFilters={appliedFilters} />
             )}
 
-            {activeTab === "Timeline" && (
+            {activeTab === "Timeline" /* && isDeleted===false */ && (
                 <Timeline id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} searchTerm={searchTerm} appliedFilters={appliedFilters} />
             )}
 
-            {activeTab === "Table" && (
+            {activeTab === "Table" /* && isDeleted===false */ && (
                 <TableView id={id} setIsModalNewTaskOpen={setIsModalNewTaskOpen} searchTerm={searchTerm} appliedFilters={appliedFilters} />
             )}
         </div>

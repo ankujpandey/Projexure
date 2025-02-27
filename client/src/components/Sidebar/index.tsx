@@ -1,8 +1,9 @@
 'use client'
+import ModalNewProject from '@/app/projects/ModalNewProject';
 import { useAppDispatch, useAppSelector } from '@/app/redux';
 import { setIsSidebarCollapsed } from '@/state';
 import { useGetProjectsQuery } from '@/state/api';
-import { AlertCircle, AlertOctagon, AlertTriangle, Briefcase, ChevronDown, ChevronUp, Home, Layers3, LockIcon, LucideIcon, Search, Settings, ShieldAlert, User, Users, X } from 'lucide-react';
+import { AlertCircle, AlertOctagon, AlertTriangle, Briefcase, ChevronDown, ChevronUp, Home, Layers3, LockIcon, LucideIcon, Plus, Search, Settings, ShieldAlert, User, Users, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -11,6 +12,7 @@ import React, { useState } from 'react'
 const Sidebar = () => {
     const [showProjects, setShowProjects] = useState(true);
     const [showPriority, setShowPriority] = useState(true);
+    const [isModalNewProjectOpen, setIsModalNewProjectOpen] = useState(false);
 
     const { data: projects } = useGetProjectsQuery();
     const dispatch = useAppDispatch();
@@ -25,6 +27,10 @@ const Sidebar = () => {
 
     return (
       <div className={sidebarClassNames}>
+        <ModalNewProject
+          isOpen={isModalNewProjectOpen}
+          onClose={() => setIsModalNewProjectOpen(false)}
+        />
         <div className="flex h-[100%] w-full flex-col justify-start">
           {/* Top logo */}
           <div className="z-50 flex min-h-[56px] w-64 items-center justify-between bg-white px-6 pt-3 dark:bg-black">
@@ -33,13 +39,13 @@ const Sidebar = () => {
               {/* Blending "project" and "structure" for an organized and systematic feel. */}
             </div>
             {isSidebarCollapsed ? null : (
-              <button 
-                className='py-3'
-                onClick={()=>{
+              <button
+                className="py-3"
+                onClick={() => {
                   dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
                 }}
               >
-                <X className='h-6 w-6 text-gray-800 hover:text-gray-500 dark:text-white' />
+                <X className="h-6 w-6 text-gray-800 hover:text-gray-500 dark:text-white" />
               </button>
             )}
           </div>
@@ -57,57 +63,87 @@ const Sidebar = () => {
             </div>
           </div>
           {/* Navbar Links */}
-          <nav className='z-10 w-full'>
-            <SidebarLink icon={Home} lable="Home" href='/' />
-            <SidebarLink icon={Briefcase} lable="Timeline" href='/timeline' />
-            <SidebarLink icon={Search} lable="Search" href='/search' />
-            <SidebarLink icon={Settings} lable="Settings" href='/settings' />
-            <SidebarLink icon={User} lable="Users" href='/users' />
-            <SidebarLink icon={Users} lable="Teams" href='/teams' />
+          <nav className="z-10 w-full">
+            <SidebarLink icon={Home} lable="Home" href="/" />
+            <SidebarLink icon={Briefcase} lable="Timeline" href="/timeline" />
+            <SidebarLink icon={Search} lable="Search" href="/search" />
+            <SidebarLink icon={Settings} lable="Settings" href="/settings" />
+            <SidebarLink icon={User} lable="Users" href="/users" />
+            <SidebarLink icon={Users} lable="Teams" href="/teams" />
           </nav>
 
           {/* PROJECTS LINKS */}
-          <button 
-            onClick={()=> setShowProjects((prev) => !prev)}
-            className='flex w-full items-center justify-between px-8 py-3 text-gray-500'
+          <button
+            onClick={() => setShowProjects((prev) => !prev)}
+            className="flex w-full items-center justify-between px-8 py-3 text-gray-500"
           >
-            <span className=''>Projects</span>
+            <span className="">Projects</span>
+            <button
+              className="ml-20"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsModalNewProjectOpen(true);
+              }}
+            >
+              <Plus className="h-5 w-5" />
+            </button>
             {showProjects ? (
-              <ChevronUp className='h-5 w-5' />
+              <ChevronUp className="h-5 w-5" />
             ) : (
-              <ChevronDown className='h-5 w-5' />
+              <ChevronDown className="h-5 w-5" />
             )}
           </button>
 
           {/* PROJECTS LIST */}
-          {showProjects && projects?.map((project) => (
-            <SidebarLink 
-              key={project.id}
-              icon={Briefcase}
-              lable={project.name}
-              href={`/projects/${project.id}`}
-            />
-          ))}
+          {showProjects &&
+            projects?.map((project) => (
+              <SidebarLink
+                key={project.id}
+                icon={Briefcase}
+                lable={project.name}
+                href={`/projects/${project.id}`}
+              />
+            ))}
 
           {/* PRIORITIES LINKS */}
-          <button 
-            onClick={()=> setShowPriority((prev) => !prev)}
-            className='flex w-full items-center justify-between px-8 py-3 text-gray-500'
+          <button
+            onClick={() => setShowPriority((prev) => !prev)}
+            className="flex w-full items-center justify-between px-8 py-3 text-gray-500"
           >
-            <span className=''>Priority</span>
+            <span className="">Priority</span>
             {showPriority ? (
-              <ChevronUp className='h-5 w-5' />
+              <ChevronUp className="h-5 w-5" />
             ) : (
-              <ChevronDown className='h-5 w-5' />
+              <ChevronDown className="h-5 w-5" />
             )}
           </button>
           {showPriority && (
             <>
-              <SidebarLink icon={AlertCircle} lable="Urgent" href='/priority/urgent' />
-              <SidebarLink icon={ShieldAlert} lable="High" href='/priority/high' />
-              <SidebarLink icon={AlertTriangle} lable="Medium" href='/priority/medium' />
-              <SidebarLink icon={AlertOctagon} lable="Low" href='/priority/low' />
-              <SidebarLink icon={Layers3} lable="Backlog" href='/priority/backlog' />
+              <SidebarLink
+                icon={AlertCircle}
+                lable="Urgent"
+                href="/priority/urgent"
+              />
+              <SidebarLink
+                icon={ShieldAlert}
+                lable="High"
+                href="/priority/high"
+              />
+              <SidebarLink
+                icon={AlertTriangle}
+                lable="Medium"
+                href="/priority/medium"
+              />
+              <SidebarLink
+                icon={AlertOctagon}
+                lable="Low"
+                href="/priority/low"
+              />
+              <SidebarLink
+                icon={Layers3}
+                lable="Backlog"
+                href="/priority/backlog"
+              />
             </>
           )}
         </div>

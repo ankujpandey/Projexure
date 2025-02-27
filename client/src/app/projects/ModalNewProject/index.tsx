@@ -158,6 +158,7 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { formatISO, parseISO } from 'date-fns';
 import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 
@@ -169,6 +170,7 @@ type Props = {
   
   const ModalNewProject = ({ isOpen, onClose, project = null }: Props) => {
     const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+    const router = useRouter();
     const [createProject, { isLoading: isCreating }] = useCreateProjectMutation();
     const [updateProject, { isLoading: isUpdating }] = useUpdateProjectMutation();
   
@@ -235,6 +237,7 @@ type Props = {
         setStartDate("");
         setEndDate("");
         onClose();
+        router.push(`/projects/${response?.data?.id}`)
       }
     };
   
