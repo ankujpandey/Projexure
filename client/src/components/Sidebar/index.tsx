@@ -3,7 +3,7 @@ import ModalNewProject from '@/app/projects/ModalNewProject';
 import { useAppDispatch, useAppSelector } from '@/app/redux';
 import { setIsSidebarCollapsed } from '@/state';
 import { useGetProjectsQuery } from '@/state/api';
-import { AlertCircle, AlertOctagon, AlertTriangle, Briefcase, ChevronDown, ChevronUp, Home, Layers3, LockIcon, LucideIcon, Plus, Search, Settings, ShieldAlert, User, Users, X } from 'lucide-react';
+import { AlertCircle, AlertOctagon, AlertTriangle, Briefcase, ChartGantt, ChevronDown, ChevronUp, Home, Layers3, LockIcon, LucideIcon, Plus, Search, Settings, ShieldAlert, User, Users, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -65,7 +65,7 @@ const Sidebar = () => {
           {/* Navbar Links */}
           <nav className="z-10 w-full">
             <SidebarLink icon={Home} lable="Home" href="/" />
-            <SidebarLink icon={Briefcase} lable="Timeline" href="/timeline" />
+            <SidebarLink icon={ChartGantt} lable="Timeline" href="/timeline" />
             <SidebarLink icon={Search} lable="Search" href="/search" />
             <SidebarLink icon={Settings} lable="Settings" href="/settings" />
             <SidebarLink icon={User} lable="Users" href="/users" />
