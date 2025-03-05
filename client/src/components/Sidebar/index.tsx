@@ -3,11 +3,13 @@ import ModalNewProject from '@/app/projects/ModalNewProject';
 import { useAppDispatch, useAppSelector } from '@/app/redux';
 import { setIsSidebarCollapsed } from '@/state';
 import { useGetProjectsQuery } from '@/state/api';
+import { Avatar } from '@mui/material';
 import { AlertCircle, AlertOctagon, AlertTriangle, Briefcase, ChartGantt, ChevronDown, ChevronUp, Home, Layers3, LockIcon, LucideIcon, Plus, Search, Settings, ShieldAlert, User, Users, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useState } from 'react'
+import LetterAvatar from '../LetterAvatar';
 
 const Sidebar = () => {
     const [showProjects, setShowProjects] = useState(true);
@@ -51,7 +53,8 @@ const Sidebar = () => {
           </div>
           {/* Team */}
           <div className="item-center flex gap-5 border-y-[1.5px] border-gray-200 px-8 py-4 dark:border-gray-700">
-            <Image src="/logo.png" alt="logo" width={40} height={40} />
+            {/* <Image src="/logo.png" alt="logo" width={40} height={40} /> */}
+            <LetterAvatar name="Project Team" size={40} sx={{borderRadius: '0%'}}  />
             <div>
               <h3 className="text-md font-bold tracking-wide dark:text-gray-200">
                 PROJECT TEAM

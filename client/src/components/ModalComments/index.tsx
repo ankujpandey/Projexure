@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { format } from 'date-fns';
 import React, { useEffect, useState } from 'react'
 import { User } from 'lucide-react';
+import LetterAvatar from '../LetterAvatar';
 
 type Props = {
     isOpen: boolean;
@@ -72,9 +73,10 @@ const ModalComments = ({ isOpen, onClose, task, onCommentAdded }: Props) => {
                           className="h-10 w-10 rounded-full border-2 border-white object-cover dark:border-dark-secondary"
                         />
                       ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-gray-200 dark:border-dark-secondary">
-                          <User className="h-6 w-6 text-gray-500" />
-                        </div>
+                          // {/* <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-gray-200 dark:border-dark-secondary">
+                          //   <User className="h-6 w-6 text-gray-500" />
+                          // </div> */}
+                        <LetterAvatar name={`${comment?.username}`} size={35} />
                       )}
                     </div>
                     <div className="flex-1 mb-1">
