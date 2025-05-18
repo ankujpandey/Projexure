@@ -54,7 +54,7 @@ const Sidebar = () => {
           {/* Team */}
           <div className="item-center flex gap-5 border-y-[1.5px] border-gray-200 px-8 py-4 dark:border-gray-700">
             {/* <Image src="/logo.png" alt="logo" width={40} height={40} /> */}
-            <LetterAvatar name="Project Team" size={40} sx={{borderRadius: '0%'}}  />
+            <LetterAvatar name="Project Team" size={40} sx={{borderRadius: '10%'}}  />
             <div>
               <h3 className="text-md font-bold tracking-wide dark:text-gray-200">
                 PROJECT TEAM
@@ -81,15 +81,16 @@ const Sidebar = () => {
             className="flex w-full items-center justify-between px-8 py-3 text-gray-500"
           >
             <span className="">Projects</span>
-            <button
-              className="ml-20"
+            <div
+              role="button"
+              className="ml-20 flex h-6 w-6 items-center justify-center rounded-full bg-gray-300"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsModalNewProjectOpen(true);
               }}
             >
-              <Plus className="h-5 w-5" />
-            </button>
+              <Plus className="h-5 w-5" style={{marginBottom: "-0.1rem"}} />
+            </div>
             {showProjects ? (
               <ChevronUp className="h-5 w-5" />
             ) : (
